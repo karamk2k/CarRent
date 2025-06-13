@@ -49,23 +49,23 @@
                 <h2 class="text-xl font-semibold">Rent Car</h2>
                 <span class="close" onclick="closeRentalModal()">&times;</span>
             </div>
-            
+
             <form id="rentalForm">
                 @csrf
                 <input type="hidden" id="modalCarId" name="car_id">
                 <input type="hidden" id="modalCarPrice" name="car_price">
                 <input type="hidden" name="payment_method" value="stripe">
-                
+
                 <div class="form-group">
                     <label for="modalStartDate">Start Date</label>
                     <input type="date" id="modalStartDate" name="start_date" required min="{{ date('Y-m-d') }}">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="modalEndDate">End Date</label>
                     <input type="date" id="modalEndDate" name="end_date" required min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="modalDiscount">Discount Code (Optional)</label>
                     <input type="text" id="modalDiscount" name="discount_name" placeholder="Enter discount code">
@@ -86,7 +86,7 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <div class="price-summary mt-4">
                     <div class="price-row">
                         <span>Base Price:</span>
@@ -101,7 +101,7 @@
                         <span id="modalTotalPrice">$0.00</span>
                     </div>
                 </div>
-                
+
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeRentalModal()">Cancel</button>
                     <button type="submit" id="submit-rental" class="btn-primary">
@@ -140,7 +140,7 @@
     <script>
     // Set authentication state
     window.isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
-    
+
     // Initialize Stripe with error handling
     let stripe;
     try {
@@ -205,7 +205,7 @@
     document.getElementById('rentalForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         hideModalError(); // Hide any previous errors
-        
+
         if (!stripe || !card) {
             showModalError('Payment system is not available. Please try a different browser or disable your ad blocker.');
             return;
@@ -284,7 +284,7 @@
 
                 showToast('Car rented successfully!', 'success');
                 closeRentalModal();
-                
+
                 // Refresh cars grid
                 if (typeof CarsGrid !== 'undefined') {
                     CarsGrid.loadCars();
@@ -322,15 +322,15 @@
             // Reset form
             document.getElementById('rentalForm').reset();
             document.getElementById('card-errors').textContent = '';
-            
+
             // Set car data
             document.getElementById('modalCarId').value = carId;
             document.getElementById('modalCarPrice').value = carPrice;
-            
+
             // Show modal
             document.getElementById('rentalModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
-            
+
             // Update price display
             updatePrice();
         } catch (error) {
@@ -348,13 +348,13 @@
         const startDate = new Date(document.getElementById('modalStartDate').value);
         const endDate = new Date(document.getElementById('modalEndDate').value);
         const basePrice = parseFloat(document.getElementById('modalCarPrice').value);
-        
+
         if (startDate && endDate && !isNaN(startDate) && !isNaN(endDate)) {
             const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
             const totalBasePrice = basePrice * days;
-            
+
             document.getElementById('modalBasePrice').textContent = `$${totalBasePrice.toFixed(2)}`;
-            
+
             const discountCode = document.getElementById('modalDiscount').value;
             if (discountCode) {
                 checkDiscount(discountCode, totalBasePrice);
@@ -372,7 +372,7 @@
                 if (data.valid) {
                     const discountAmount = (basePrice * data.percentage / 100);
                     const totalPrice = basePrice - discountAmount;
-                    
+
                     document.getElementById('modalDiscountAmount').textContent = `-$${discountAmount.toFixed(2)}`;
                     document.getElementById('modalTotalPrice').textContent = `$${totalPrice.toFixed(2)}`;
                 } else {
@@ -386,109 +386,36 @@
             });
     }
 
-    // Favorite functionality
-    function initializeFavorites() {
-        // Load user favorites on page load if authenticated
-        if (window.isAuthenticated) {
-            loadUserFavorites();
-        }
 
-        // Handle favorite button clicks
-        $(document).on('click', '.favorite-btn', function(e) {
-            e.preventDefault();
-            const button = $(this);
-            const carId = button.data('car-id');
-            const isFavorite = button.hasClass('text-red-500');
 
-            // Only allow favorites for authenticated users
-            if (!window.isAuthenticated) {
-                showToast('Please login to manage favorites', 'warning');
-                return;
-            }
 
-            // Use the correct endpoint based on action
-            const url = isFavorite ? '/favorites/remove' : '/favorites/add';
-            const method = isFavorite ? 'DELETE' : 'POST';
 
-            $.ajax({
-                url: url,
-                method: method,
-                data: JSON.stringify({ car_id: carId }),
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        button.toggleClass('text-red-500 text-gray-400');
-                        showToast(response.message, 'success');
-                    } else {
-                        showToast(response.message || 'Error updating favorite status', 'error');
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Favorite error:', xhr);
-                    showToast(xhr.responseJSON?.message || 'Error updating favorite status', 'error');
-                }
-            });
-        });
-    }
-
-    // Load user favorites
-    function loadUserFavorites() {
-        if (!window.isAuthenticated) return;
-
-        $.ajax({
-            url: '/favorites',
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            },
-            success: function(response) {
-                if (response.success && response.data) {
-                    // Update favorite buttons based on user's favorites
-                    response.data.forEach(favorite => {
-                        const button = $(`.favorite-btn[data-car-id="${favorite.car.id}"]`);
-                        if (button.length) {
-                            button.addClass('text-red-500').removeClass('text-gray-400');
-                        }
-                    });
-                }
-            },
-            error: function(xhr) {
-                console.error('Error loading favorites:', xhr);
-            }
-        });
-    }
 
     // Update the renderCarCard function to include favorite button
     function renderCarCard(car) {
         const template = document.getElementById('car-card-template');
         const card = template.content.cloneNode(true);
-        
+
         // Set car data
         card.querySelector('img').src = car.image_url;
         card.querySelector('img').alt = car.name;
         card.querySelector('h3').textContent = car.name;
         card.querySelector('p').textContent = car.description;
         card.querySelector('.text-primary').textContent = `$${car.price_per_day}/day`;
-        
+
         // Set favorite button data
         const favoriteBtn = card.querySelector('.favorite-btn');
         favoriteBtn.dataset.carId = car.id;
-        
+
         // Set rent button data
         const rentBtn = card.querySelector('.rent-btn');
         rentBtn.dataset.carId = car.id;
-        
+
         return card;
     }
 
     // Initialize favorites when document is ready
-    $(document).ready(function() {
-        initializeFavorites();
-    });
+
 
     // CarsGrid object
     const CarsGrid = {
@@ -503,15 +430,13 @@
 
         initFavorites() {
             // Load user favorites on page load if authenticated
-            if (window.isAuthenticated) {
-                this.loadUserFavorites();
-            }
+
 
             // Handle favorite button clicks
             $(document).on('click', '.favorite-btn', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const button = $(e.currentTarget);
                 const carId = button.data('car-id');
                 const isFavorite = button.hasClass('text-red-500');
@@ -551,60 +476,34 @@
             });
         },
 
-        loadUserFavorites() {
-            if (!window.isAuthenticated) return;
-
-            $.ajax({
-                url: '/favorites',
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success && response.data) {
-                        // Update favorite buttons based on user's favorites
-                        response.data.forEach(favorite => {
-                            const button = $(`.favorite-btn[data-car-id="${favorite.car.id}"]`);
-                            if (button.length) {
-                                button.addClass('text-red-500').removeClass('text-gray-400');
-                            }
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Error loading favorites:', xhr);
-                }
-            });
-        },
 
         createCarCard(car) {
             const card = document.createElement('div');
             const carData = car.car || car;
-            
+
             // Check car availability
             const isAvailable = carData.available_at === null;
             const availabilityClass = isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-            
+
             // Check if user has pending or ongoing rental
             const hasPendingRental = {{ auth()->check() ? (auth()->user()->hasPendingRental() ? 'true' : 'false') : 'false' }};
             const hasOngoingRental = {{ auth()->check() ? (auth()->user()->hasOngoingRental() ? 'true' : 'false') : 'false' }};
             const canRent = isAvailable && !hasPendingRental && !hasOngoingRental;
-            
+
             // Format availability text
-            let availabilityText = isAvailable ? 
+            let availabilityText = isAvailable ?
                 `Available from ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` :
-                carData.available_at ? 
+                carData.available_at ?
                     `Available from ${new Date(carData.available_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` :
                     'Not Available';
-            
+
             // Add card classes
             card.className = `bg-white rounded-xl shadow-sm overflow-hidden car-card hover:shadow-lg transition-shadow duration-300 ${!canRent ? 'opacity-75' : ''}`;
-            
+
             // Escape special characters
             const safeId = String(carData.id).replace(/"/g, '&quot;');
             const safePrice = String(carData.price).replace(/"/g, '&quot;');
-            
+
             // Set card HTML
             card.innerHTML = `
                 <div class="relative">
@@ -627,14 +526,14 @@
                         </div>
                         ` : ''}
                     </div>
-                    <button class="favorite-btn absolute top-4 left-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors ${carData.is_favorite ? 'text-red-500' : 'text-gray-400'}" 
+                    <button class="favorite-btn absolute top-4 left-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors ${carData.is_favorite ? 'text-red-500' : 'text-gray-400'}"
                             data-car-id="${safeId}">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
                         </svg>
                     </button>
                 </div>
-                
+
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
                         <div>
@@ -650,7 +549,7 @@
                             <span class="ml-1 text-gray-600">${carData.rating || '4.5'}</span>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="flex items-center text-gray-600">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -665,17 +564,17 @@
                             ${carData.fuel_type || ''}
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-between items-center">
                         <div>
                             <span class="text-2xl font-bold text-primary">$${parseFloat(carData.price || 0).toFixed(2)}</span>
                             <span class="text-gray-500">/day</span>
                         </div>
-                        <button type="button" 
-                                class="btn-primary rent-now-btn ${!canRent ? 'opacity-50 cursor-not-allowed' : ''}" 
+                        <button type="button"
+                                class="btn-primary rent-now-btn ${!canRent ? 'opacity-50 cursor-not-allowed' : ''}"
                                 data-car-id="${safeId}"
                                 data-car-price="${safePrice}"
-                            
+
                                 ${!canRent ? 'disabled' : ''}>
                             ${hasOngoingRental ? 'Ongoing Rental' : (hasPendingRental ? 'Pending Rental' : (isAvailable ? 'Rent Now' : 'Not Available'))}
                         </button>
@@ -779,15 +678,15 @@
             try {
                 // Reset form
                 $('#rental-form')[0].reset();
-                
+
                 // Set car data
                 $('#rental-car-id').val(car.id);
                 $('#rental-car-price').val(car.price);
-                
+
                 // Show modal
                 $('#rental-modal').fadeIn(200);
                 $('body').addClass('overflow-hidden');
-                
+
                 // Update price summary
                 this.updatePriceSummary();
             } catch (error) {
@@ -806,13 +705,13 @@
             const startDate = new Date($('#start_date').val());
             const endDate = new Date($('#end_date').val());
             const basePrice = parseFloat($('#rental-car-price').val());
-            
+
             if (startDate && endDate && !isNaN(startDate) && !isNaN(endDate)) {
                 const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                 const totalBasePrice = basePrice * days;
-                
+
                 $('#base-price').text(`$${totalBasePrice.toFixed(2)}`);
-                
+
                 // Check discount if entered
                 const discountCode = $('#discount_name').val();
                 if (discountCode) {
@@ -829,7 +728,7 @@
                 if (response.valid) {
                     const discountAmount = (basePrice * response.percentage / 100);
                     const totalPrice = basePrice - discountAmount;
-                    
+
                     $('#discount-amount').text(`-$${discountAmount.toFixed(2)}`);
                     $('#total-price').text(`$${totalPrice.toFixed(2)}`);
                 } else {
@@ -1148,4 +1047,4 @@
         display: none;
     }
     </style>
-    @endpush 
+    @endpush

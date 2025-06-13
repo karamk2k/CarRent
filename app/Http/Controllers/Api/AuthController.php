@@ -18,7 +18,7 @@ use App\Http\Requests\Auth\RemoveFavortie;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
-
+use Illuminate\Auth\Events\Login;
 
 class AuthController extends Controller
 {
@@ -38,19 +38,21 @@ class AuthController extends Controller
         return $this->apiResponse(false, 'Unauthorized', 401);
     }
 
+
     $user = auth()->user();
-    
+    event(new Login('web', $user, false));
+
 
     return $this->apiResponse(
-        true, 
-        'User logged in successfully', 
+        true,
+        'User logged in successfully',
         new UserResource($user)
     );
 }
 
 public function logout()
 {
-    auth()->logout();   
+    auth()->logout();
     return $this->apiResponse(true, 'User logged out successfully');
 
 }
@@ -83,7 +85,7 @@ public function send_otp(OtpSendRequest $otpSendRequest){
         ]);
 
         $user = auth()->user();
-        
+
         // Check if already favorited
         if ($user->favorites()->where('car_id', $request->car_id)->exists()) {
             return $this->apiResponse(false, 'Car is already in favorites');
@@ -104,7 +106,7 @@ public function send_otp(OtpSendRequest $otpSendRequest){
         ]);
 
         $user = auth()->user();
-        
+
         // Find and delete the favorite
         $deleted = $user->favorites()
             ->where('car_id', $request->car_id)
@@ -127,8 +129,8 @@ public function send_otp(OtpSendRequest $otpSendRequest){
             ->get();
 
         return $this->apiResponse(
-            true, 
-            'Favorites retrieved successfully', 
+            true,
+            'Favorites retrieved successfully',
             UserFavoriteItemResource::collection($favorites)
         );
     }

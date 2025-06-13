@@ -20,15 +20,10 @@ class DiscountController extends Controller
         return $this->apiResponse(true, 'Discounts fetched successfully', DiscountResource::collection($discounts));
     }
 
-    
+
     /**
      * Store a newly created resource in storage.
      */
-    public function store(DiscountRequest $request)
-    {
-        $discount = Discount::create($request->validated());
-        return $this->apiResponse(true, 'Discount created successfully', new DiscountResource($discount));
-    }
 
     /**
      * Display the specified resource.
@@ -38,30 +33,20 @@ class DiscountController extends Controller
         return $this->apiResponse(true, 'Discount fetched successfully', new DiscountResource($discount));
     }
 
-    
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(DiscountRequest $request, Discount $discount)
-    {
-        $discount->update($request->validated());
-        return $this->apiResponse(true, 'Discount updated successfully', new DiscountResource($discount));
-    }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Discount $discount)
-    {
-        $discount->delete();
-        return $this->apiResponse(true, 'Discount deleted successfully');
-    }
 
     public function check($code)
     {
         $discount = Discount::where('name', $code)
-            ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->first();
 

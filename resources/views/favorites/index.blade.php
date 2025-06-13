@@ -23,7 +23,7 @@
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
             <p class="text-gray-600 mb-4">Start adding cars to your favorites to see them here</p>
-            <a href="{{ route('cars.index') }}" class="btn-primary inline-flex items-center">
+            <a href="{{ route('home') }}" class="btn-primary inline-flex items-center">
                 Browse Cars
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -57,7 +57,7 @@ $(document).ready(function() {
             },
             success: function(response) {
                 $('#favorites-loading').hide();
-                
+
                 if (response.success && response.data && response.data.length > 0) {
                     $('#favorites-grid').show();
                     renderFavorites(response.data);
@@ -87,18 +87,18 @@ $(document).ready(function() {
     function createFavoriteCard(car) {
         const isAvailable = car.available_at === null;
         const availabilityClass = isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-        
+
         // Format availability text
-        const availabilityText = isAvailable ? 
-            'Available Now' : 
+        const availabilityText = isAvailable ?
+            'Available Now' :
             `Available from ${new Date(car.available_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
 
         return `
             <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <div class="relative">
-                    <img src="${car.image_url || ''}" alt="${car.name || ''}" 
+                    <img src="${car.image_url || ''}" alt="${car.name || ''}"
                          class="w-full h-48 object-cover ${!isAvailable ? 'grayscale' : ''}">
-                    
+
                     <!-- Availability Badge -->
                     <div class="absolute top-4 right-4">
                         <span class="${availabilityClass} backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
@@ -107,7 +107,7 @@ $(document).ready(function() {
                     </div>
 
                     <!-- Remove Favorite Button -->
-                    <button class="favorite-btn absolute top-4 left-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-red-500" 
+                    <button class="favorite-btn absolute top-4 left-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-red-500"
                             data-car-id="${car.id}">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -164,7 +164,7 @@ $(document).ready(function() {
     $('#favorites-grid').on('click', '.favorite-btn', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const button = $(this);
         const carId = button.data('car-id');
         const card = button.closest('.bg-white');
@@ -202,4 +202,4 @@ $(document).ready(function() {
 });
 </script>
 @endpush
-@endsection 
+@endsection

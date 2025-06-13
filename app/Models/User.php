@@ -88,5 +88,36 @@ public function hasOngoingRental(): bool
         ->exists();
 }
 
+/**
+ * Get all bans for the user
+ */
+public function bans()
+{
+    return $this->hasMany(UserBan::class);
+}
+
+/**
+ * Get the user's active ban
+ */
+public function activeBan()
+{
+    return $this->hasOne(UserBan::class)->active();
+}
+
+/**
+ * Check if the user is currently banned
+ */
+public function isBanned(): bool
+{
+    return $this->activeBan()->exists();
+}
+
+/**
+ * Get bans issued by this user (for admins)
+ */
+public function issuedBans()
+{
+    return $this->hasMany(UserBan::class, 'banned_by');
+}
 
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services;
 
@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use App\Events\CarRented;
 
 class RentalService
 {
@@ -26,7 +27,7 @@ class RentalService
         if (auth()->user()->hasPendingRental()) {
             throw new PendingRentalExistsException();
         }
-        
+
         if (auth()->user()->hasOngoingRental()) {
             throw new ActiveRentalExistsException();
         }
@@ -90,7 +91,16 @@ class RentalService
             ]);
 
             DB::commit();
-
+            event(new CarRented(
+                auth()->user(),
+                $car,
+                [
+                    'duration' => $days,
+                    'total_price' => $totalPrice,
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d')
+                ]
+            ));
             return [
                 'rental' => $rental,
                 'client_secret' => $paymentIntent->client_secret
@@ -168,5 +178,26 @@ class RentalService
         }
     }
 
-   
+    public function completeRental(Rental $rental)
+    {
+        DB::beginTransaction();
+        try {
+            $rental->update(['status' => 'completed']);
+            $rental->car->update(['available_at' => null]);
+            UserHistory::where('user_id', $rental->user_id)
+                ->where('car_id', $rental->car_id)
+                ->where('rent_date', $rental->start_date)
+                ->update([
+                    'status' => 'completed',
+                    'payment_status' => 'paid'
+                ]);
+            DB::commit();
+            return $rental;
+        } catch(\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+
 }

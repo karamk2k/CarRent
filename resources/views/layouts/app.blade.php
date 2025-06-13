@@ -6,18 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Add Stripe permissions policy -->
     <meta http-equiv="Permissions-Policy" content="private-state-token-redemption=(), private-state-token-issuance=()">
-    
+
     <title>Car Rent - @yield('title')</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Custom Styles -->
     <style>
         :root {
@@ -25,11 +25,11 @@
             --secondary-color: #1A202C;
             --accent-color: #54A6FF;
         }
-        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        
+
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
@@ -37,7 +37,7 @@
             border-radius: 0.5rem;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             opacity: 0.9;
         }
@@ -78,7 +78,7 @@
             background-color: #EF4444;
         }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="bg-gray-50">
@@ -97,18 +97,15 @@
                         <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">CarRent</span>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center space-x-4">
-                    @auth
-                        <a href="{{ route('favorites.index') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 relative">
+
+                        <a href="{{ route('favorites.index.page') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 relative">
                             <div class="flex items-center space-x-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
                                 <span>Favorites</span>
-                                <span id="favorites-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">
-                                    0
-                                </span>
                             </div>
                         </a>
                         <a href="{{ route('user.history') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50">
@@ -134,21 +131,9 @@
                             </svg>
                             <span>Logout</span>
                         </button>
-                       
-                    @else
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                            </svg>
-                            <span>Login</span>
-                        </a>
-                        <a href="{{ route('register') }}" class="btn-primary flex items-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                            <span>Register</span>
-                        </a>
-                    @endauth
+
+
+
                 </div>
             </div>
         </div>
@@ -194,7 +179,7 @@
         function setLoading(element, isLoading) {
             const $element = $(element);
             const $spinner = $element.find('.spinner');
-            
+
             if (isLoading) {
                 $element.prop('disabled', true);
                 $spinner.show();
@@ -208,12 +193,12 @@
         function submitForm(form, options = {}) {
             const $form = $(form);
             const $submitButton = $form.find('[type="submit"]');
-            
+
             $form.on('submit', function(e) {
                 e.preventDefault();
-                
+
                 setLoading($submitButton, true);
-                
+
                 $.ajax({
                     url: $form.attr('action'),
                     method: $form.attr('method'),
@@ -228,14 +213,14 @@
                     error: function(xhr) {
                         const message = xhr.responseJSON?.message || 'An error occurred';
                         showToast(message, 'error');
-                        
+
                         if (options.error) {
                             options.error(xhr);
                         }
                     },
                     complete: function() {
                         setLoading($submitButton, false);
-                        
+
                         if (options.complete) {
                             options.complete();
                         }
@@ -247,11 +232,11 @@
         // AJAX GET Request
         function fetchData(url, options = {}) {
             const $element = $(options.target);
-            
+
             if ($element) {
                 setLoading($element, true);
             }
-            
+
             return $.ajax({
                 url: url,
                 method: 'GET',
@@ -262,7 +247,7 @@
                 },
                 error: function(xhr) {
                     showToast(xhr.responseJSON?.message || 'Failed to fetch data', 'error');
-                    
+
                     if (options.error) {
                         options.error(xhr);
                     }
@@ -271,7 +256,7 @@
                     if ($element) {
                         setLoading($element, false);
                     }
-                    
+
                     if (options.complete) {
                         options.complete();
                     }
@@ -282,7 +267,7 @@
         // Handle Logout
         $('#logout-form').on('click', function(e) {
             e.preventDefault();
-            
+
             $.ajax({
                 url: "{{ route('logout') }}",
                 method: 'POST',
@@ -295,42 +280,10 @@
             });
         });
 
-        // Update favorites count
-        function updateFavoritesCount() {
-            if (!window.isAuthenticated) return;
 
-            $.ajax({
-                url: '{{ route("favorites.index") }}',
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                },
-                success: function(response) {
-                    if (response.success && response.data) {
-                        const count = response.data.length;
-                        const $count = $('#favorites-count');
-                        
-                        if (count > 0) {
-                            $count.text(count).show();
-                        } else {
-                            $count.hide();
-                        }
-                    }
-                }
-            });
-        }
 
-        // Update count on page load
-        $(document).ready(function() {
-            updateFavoritesCount();
-        });
-
-        // Update count when favorites change
-        $(document).on('favoritesUpdated', function() {
-            updateFavoritesCount();
-        });
     </script>
 
     @stack('scripts')
 </body>
-</html> 
+</html>

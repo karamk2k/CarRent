@@ -22,7 +22,7 @@ class RentalController extends Controller
     {
         try {
             $result = $this->rentalService->createRental($request->validated(), auth()->user());
-            
+
             return $this->apiResponse(true, 'Rental created successfully', [
                 'rental' => new RentalResource($result['rental']),
                 'client_secret' => $result['client_secret']
@@ -51,4 +51,7 @@ class RentalController extends Controller
             return $this->apiResponse(false, $e->getMessage(), null, 500);
         }
     }
+
+
+
 }

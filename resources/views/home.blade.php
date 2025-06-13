@@ -9,7 +9,7 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .hero-section::before {
         content: '';
         position: absolute;
@@ -20,62 +20,62 @@
         background: url('/images/hero-pattern.svg') center/cover;
         opacity: 0.1;
     }
-    
+
     .search-container {
         position: relative;
         backdrop-filter: blur(10px);
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
+
     .filter-card {
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
     }
-    
+
     .car-card {
         transition: all 0.3s ease;
         background: white;
         border: 1px solid rgba(0, 0, 0, 0.05);
     }
-    
+
     .car-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
     }
-    
+
     .car-image {
         transition: transform 0.3s ease;
     }
-    
+
     .car-card:hover .car-image {
         transform: scale(1.05);
     }
-    
+
     .favorite-btn {
         transition: all 0.3s ease;
     }
-    
+
     .favorite-btn:hover {
         transform: scale(1.1);
     }
-    
+
     .filter-select {
         transition: all 0.2s ease;
     }
-    
+
     .filter-select:focus {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(53, 99, 233, 0.1);
     }
-    
+
     @keyframes shimmer {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
     }
-    
+
     .skeleton-loading {
         animation: shimmer 1.5s infinite;
         background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
@@ -91,12 +91,12 @@
         <div class="max-w-3xl mx-auto text-center">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Perfect Ride</h1>
             <p class="text-xl text-white/90 mb-8">Discover and rent the perfect car for your journey</p>
-            
+
             {{-- Quick Search Bar --}}
             <div class="search-container rounded-xl p-2">
                 <div class="relative">
-                    <input type="text" 
-                           id="quick-search" 
+                    <input type="text"
+                           id="quick-search"
                            class="w-full px-6 py-4 rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-white focus:border-transparent"
                            placeholder="Search by car name, brand, or type...">
                     <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -122,7 +122,7 @@
                 </svg>
             </button>
         </div>
-        
+
         <form id="filter-form" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {{-- Category Filter --}}
@@ -275,7 +275,7 @@ $(document).ready(function() {
                         is_favorite: car.is_favorite || false,
                         available_at: car.available_at
                     }));
-                    
+
                     carsGrid.html(CarsGrid.renderCarsGrid(cars));
                     noResults.addClass('hidden');
                 } else {
@@ -318,7 +318,7 @@ $(document).ready(function() {
     quickSearch.on('input', function() {
         clearTimeout(searchTimeout);
         const searchTerm = $(this).val().trim();
-        
+
         searchTimeout = setTimeout(() => {
             if (searchTerm.length >= 2) {
                 loadCars('/cars?search=' + encodeURIComponent(searchTerm));
@@ -329,4 +329,4 @@ $(document).ready(function() {
     });
 });
 </script>
-@endpush 
+@endpush
