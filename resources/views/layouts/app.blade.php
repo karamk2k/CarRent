@@ -99,7 +99,7 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-
+                    @auth
                         <a href="{{ route('favorites.index.page') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 relative">
                             <div class="flex items-center space-x-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,8 +132,20 @@
                             <span>Logout</span>
                         </button>
 
-
-
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Login</span>
+                        </a>
+                        <a href="{{ route('register') }}" class="btn-primary flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                            <span>Register</span>
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>

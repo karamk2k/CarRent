@@ -9,8 +9,7 @@ use App\Http\Controllers\UserHistoryController;
 
 // Public routes
 
-Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
-Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
+
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
@@ -27,18 +26,20 @@ Route::middleware('guest')->group(function () {
 });
 
 // Protected routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','isUserBanned'])->group(function () {
 
     Route::get('/', function(){
         return view('home');
     })->name('home');
 
 
-
+    Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
+    Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
     // Auth actions
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/send-otp', [AuthController::class, 'send_otp'])->name('auth.send-otp');
     Route::post('/verify-otp', [AuthController::class, 'verify_otp'])->name('auth.verify-otp');
+
 
     // Favorites management
     Route::get('/favorites', [AuthController::class, 'get_favorites'])->name('favorites.index');
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
     // Discounts
     Route::get('/discounts/check/{code}', [DiscountController::class, 'check'])->name('discounts.check');
 });
+
 
 
 require __DIR__.'/categories.php';

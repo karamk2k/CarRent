@@ -260,7 +260,6 @@
             }
 
             if (paymentIntent.status === 'succeeded') {
-                // Confirm rental payment
                 const confirmResponse = await fetch(`/rentals/${result.data.rental.id}/confirm-payment`, {
                     method: 'POST',
                     headers: {
@@ -274,7 +273,6 @@
                     throw new Error(confirmResult.message || 'Error confirming rental payment');
                 }
 
-                // Clear form and reset Stripe elements
                 this.reset();
                 card.clear();
                 document.getElementById('card-errors').textContent = '';
@@ -301,7 +299,6 @@
         }
     });
 
-    // Update the closeRentalModal function to also hide errors
     function closeRentalModal() {
         document.getElementById('rentalModal').style.display = 'none';
         document.body.style.overflow = 'auto';
@@ -331,7 +328,7 @@
             document.getElementById('rentalModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
 
-            // Update price display
+
             updatePrice();
         } catch (error) {
             console.error('Error opening modal:', error);
@@ -339,7 +336,7 @@
         }
     }
 
-    // Update price when dates change
+
     document.getElementById('modalStartDate').addEventListener('change', updatePrice);
     document.getElementById('modalEndDate').addEventListener('change', updatePrice);
     document.getElementById('modalDiscount').addEventListener('change', updatePrice);
@@ -386,38 +383,6 @@
             });
     }
 
-
-
-
-
-
-    // Update the renderCarCard function to include favorite button
-    function renderCarCard(car) {
-        const template = document.getElementById('car-card-template');
-        const card = template.content.cloneNode(true);
-
-        // Set car data
-        card.querySelector('img').src = car.image_url;
-        card.querySelector('img').alt = car.name;
-        card.querySelector('h3').textContent = car.name;
-        card.querySelector('p').textContent = car.description;
-        card.querySelector('.text-primary').textContent = `$${car.price_per_day}/day`;
-
-        // Set favorite button data
-        const favoriteBtn = card.querySelector('.favorite-btn');
-        favoriteBtn.dataset.carId = car.id;
-
-        // Set rent button data
-        const rentBtn = card.querySelector('.rent-btn');
-        rentBtn.dataset.carId = car.id;
-
-        return card;
-    }
-
-    // Initialize favorites when document is ready
-
-
-    // CarsGrid object
     const CarsGrid = {
         init() {
             // Initialize favorites

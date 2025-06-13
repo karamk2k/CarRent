@@ -7,29 +7,29 @@
     .login-container {
         background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
     }
-    
+
     .login-card {
         backdrop-filter: blur(10px);
         background: rgba(255, 255, 255, 0.9);
         box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
         border: 1px solid rgba(255, 255, 255, 0.18);
     }
-    
+
     .input-group {
         position: relative;
         margin-bottom: 1.5rem;
     }
-    
+
     .input-group input {
         transition: all 0.3s ease;
         padding-left: 2.5rem;
     }
-    
+
     .input-group input:focus {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(53, 99, 233, 0.1);
     }
-    
+
     .input-icon {
         position: absolute;
         left: 0.75rem;
@@ -38,51 +38,51 @@
         color: #94a3b8;
         transition: color 0.3s ease;
     }
-    
+
     .input-group input:focus + .input-icon {
         color: var(--primary-color);
     }
-    
+
     .btn-login {
         position: relative;
         overflow: hidden;
         transition: all 0.3s ease;
     }
-    
+
     .btn-login:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(53, 99, 233, 0.2);
     }
-    
+
     .btn-login .spinner {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
     }
-    
+
     .error-message {
         transform: translateY(-10px);
         opacity: 0;
         transition: all 0.3s ease;
     }
-    
+
     .error-message.show {
         transform: translateY(0);
         opacity: 1;
     }
-    
+
     .remember-checkbox {
         position: relative;
         display: inline-block;
     }
-    
+
     .remember-checkbox input {
         position: absolute;
         opacity: 0;
         cursor: pointer;
     }
-    
+
     .checkmark {
         position: relative;
         display: inline-block;
@@ -93,12 +93,12 @@
         border-radius: 4px;
         transition: all 0.2s ease;
     }
-    
+
     .remember-checkbox input:checked ~ .checkmark {
         background-color: var(--primary-color);
         border-color: var(--primary-color);
     }
-    
+
     .checkmark:after {
         content: '';
         position: absolute;
@@ -111,7 +111,7 @@
         border-width: 0 2px 2px 0;
         transform: rotate(45deg);
     }
-    
+
     .remember-checkbox input:checked ~ .checkmark:after {
         display: block;
     }
@@ -149,18 +149,18 @@
             @csrf
             <div class="space-y-4">
                 <div class="input-group">
-                    <input id="email" name="email" type="email" required 
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm" 
+                    <input id="email" name="email" type="email" required
+                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
                            placeholder="Email address"
                            value="{{ old('email') }}">
                     <svg class="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                     </svg>
                 </div>
-                
+
                 <div class="input-group">
-                    <input id="password" name="password" type="password" required 
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm" 
+                    <input id="password" name="password" type="password" required
+                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
                            placeholder="Password">
                     <svg class="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -213,19 +213,19 @@ $(document).ready(function() {
     const button = form.find('button[type="submit"]');
     const buttonText = button.find('.button-text');
     const spinner = button.find('.spinner');
-    
+
     form.on('submit', function(e) {
         e.preventDefault();
-        
+
         // Reset error state
         errorContainer.addClass('hidden');
         errorMessage.text('');
-        
+
         // Show loading state
         button.prop('disabled', true);
         buttonText.addClass('opacity-0');
         spinner.removeClass('hidden');
-        
+
         $.ajax({
             url: form.attr('action'),
             method: 'POST',
@@ -236,17 +236,17 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 const response = xhr.responseJSON;
-                
+
                 // Show error message
                 errorContainer.removeClass('hidden');
                 errorMessage.text(response.message || 'Invalid credentials');
-                
+
                 // Add error animation
                 errorContainer.addClass('animate-shake');
                 setTimeout(() => {
                     errorContainer.removeClass('animate-shake');
                 }, 500);
-                
+
                 // Reset button state
                 button.prop('disabled', false);
                 buttonText.removeClass('opacity-0');
@@ -254,7 +254,7 @@ $(document).ready(function() {
             }
         });
     });
-    
+
     // Add input focus effects
     $('.input-group input').on('focus blur', function(e) {
         const group = $(this).closest('.input-group');
@@ -266,4 +266,4 @@ $(document).ready(function() {
     });
 });
 </script>
-@endpush 
+@endpush
