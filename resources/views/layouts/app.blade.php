@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Add Stripe permissions policy -->
-    <meta http-equiv="Permissions-Policy" content="private-state-token-redemption=(), private-state-token-issuance=()">
+
 
     <title>Car Rent - @yield('title')</title>
+    <!-- css -->
+
+    @vite(['resources/css/car.css'])
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +19,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Custom Styles -->
     <style>

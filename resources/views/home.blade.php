@@ -17,7 +17,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('/images/hero-pattern.svg') center/cover;
+        background: url('{{ asset('imgs/Chat.png') }}') center/cover;
         opacity: 0.1;
     }
 
@@ -149,11 +149,10 @@
                     <label for="price_range" class="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
                     <select id="price_range" name="price_range" class="filter-select w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
                         <option value="">All Prices</option>
-                        <option value="0-50">$0 - $50</option>
-                        <option value="50-100">$50 - $100</option>
-                        <option value="100-150">$100 - $150</option>
-                        <option value="150-200">$150 - $200</option>
-                        <option value="200+">$200+</option>
+                        <option value="50"> < 50</option>
+                        <option value="100"> < 100</option>
+                        <option value="150"> < 150</option>
+                        <option value="200"> < 200</option>
                     </select>
                 </div>
             </div>
@@ -215,34 +214,13 @@
 <script type="module">
 $(document).ready(function() {
     const loadingState = $('#loading-state');
-    const carsGrid = $('#cars-grid');
     const noResults = $('#no-results');
     const filterForm = $('#filter-form');
     const toggleFilters = $('#toggle-filters');
-    const quickSearch = $('#quick-search');
-    const categorySelect = $('#category');
+
+
     let searchTimeout;
 
-    // Load categories from API
-    function loadCategories() {
-        $.ajax({
-            url: '/categories',
-            method: 'GET',
-            success: function(response) {
-                if (response.data) {
-                    const categories = response.data;
-                    categories.forEach(category => {
-                        categorySelect.append(`<option value="${category.id}">${category.name}</option>`);
-                    });
-                }
-            },
-            error: function() {
-                showToast('Error loading categories', 'error');
-            }
-        });
-    }
-
-    // Toggle filters visibility
     toggleFilters.on('click', function() {
         filterForm.slideToggle(200);
         const isVisible = filterForm.is(':visible');
@@ -250,83 +228,12 @@ $(document).ready(function() {
         $(this).find('svg').toggleClass('rotate-180', isVisible);
     });
 
-    // Function to load cars via AJAX
-    function loadCars(url) {
-        loadingState.removeClass('hidden');
-        carsGrid.addClass('opacity-50');
-        noResults.addClass('hidden');
 
-        $.ajax({
-            url: url,
-            method: 'GET',
-            success: function(response) {
-                if (response.data && response.data.length > 0) {
-                    const cars = response.data.map(car => ({
-                        id: car.id,
-                        name: car.name,
-                        brand: car.model,
-                        type: car.category,
-                        year: car.year,
-                        image_url: car.image_url,
-                        price: car.price,
-                        rating: car.rating || 4.5,
-                        transmission: car.transmissions,
-                        fuel_type: car.fuel_type,
-                        is_favorite: car.is_favorite || false,
-                        available_at: car.available_at
-                    }));
 
-                    carsGrid.html(CarsGrid.renderCarsGrid(cars));
-                    noResults.addClass('hidden');
-                } else {
-                    carsGrid.html(CarsGrid.renderCarsGrid([]));
-                    noResults.removeClass('hidden');
-                }
-            },
-            error: function(xhr) {
-                console.error('Error loading cars:', xhr);
-                showToast('Error loading cars. Please try again.', 'error');
-                carsGrid.html(`
-                    <div class="col-span-full text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <h3 class="mt-2 text-lg font-medium text-gray-900">Error Loading Cars</h3>
-                        <p class="mt-1 text-gray-500">Please try again later</p>
-                    </div>
-                `);
-            },
-            complete: function() {
-                loadingState.addClass('hidden');
-                carsGrid.removeClass('opacity-50');
-            }
-        });
-    }
 
-    // Load categories and cars on page load
-    loadCategories();
-    loadCars('/cars');
 
-    // Handle filter form submission
-    filterForm.on('submit', function(e) {
-        e.preventDefault();
-        const formData = $(this).serialize();
-        loadCars('/cars?' + formData);
-    });
 
-    // Handle quick search
-    quickSearch.on('input', function() {
-        clearTimeout(searchTimeout);
-        const searchTerm = $(this).val().trim();
 
-        searchTimeout = setTimeout(() => {
-            if (searchTerm.length >= 2) {
-                loadCars('/cars?search=' + encodeURIComponent(searchTerm));
-            } else if (searchTerm.length === 0) {
-                loadCars('/cars');
-            }
-        }, 300);
-    });
 });
 </script>
 @endpush

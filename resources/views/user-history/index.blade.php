@@ -39,7 +39,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="h-10 w-10 flex-shrink-0">
-                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ $history->car->image_url }}" alt="{{ $history->car->name }}">
+                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' .$history->car->image) }}" alt="{{ $history->car->name }}">
                                             </div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-medium text-gray-900">{{ $history->car->name }}</div>
@@ -55,7 +55,7 @@
                                         <div class="text-sm font-medium text-gray-900">${{ number_format($history->total_price, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                             @if($history->status === 'completed') bg-green-100 text-green-800
                                             @elseif($history->status === 'active') bg-blue-100 text-blue-800
                                             @elseif($history->status === 'cancelled') bg-red-100 text-red-800
@@ -66,7 +66,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ ucfirst($history->payment_method) }}</div>
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                             @if($history->payment_status === 'paid') bg-green-100 text-green-800
                                             @elseif($history->payment_status === 'pending') bg-yellow-100 text-yellow-800
                                             @else bg-red-100 text-red-800
@@ -83,4 +83,4 @@
         @endif
     </div>
 </div>
-@endsection 
+@endsection

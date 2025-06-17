@@ -141,6 +141,7 @@
     // Set authentication state
     window.isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
 
+
     // Initialize Stripe with error handling
     let stripe;
     try {
@@ -217,7 +218,7 @@
         spinner.classList.remove('hidden');
 
         try {
-            // First create the rental to get payment intent
+
             const formData = new FormData(this);
             const response = await fetch('/rentals', {
                 method: 'POST',
@@ -474,7 +475,7 @@
                 <div class="relative">
                     <img src="${carData.image_url || ''}" alt="${carData.name || ''}" class="w-full h-48 object-cover car-image ${!canRent ? 'grayscale' : ''}">
                     <div class="absolute top-4 right-4 flex flex-col gap-2">
-                        <div class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                        <div class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium car-card-category">
                             ${carData.type || carData.category || ''}
                         </div>
                         <div class="${availabilityClass} backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
@@ -502,8 +503,8 @@
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 class="text-xl font-semibold text-gray-900">${carData.name || ''}</h3>
-                            <p class="text-gray-500">
+                            <h3 class="text-xl font-semibold text-gray-900 car-card-name ">${carData.name || ''}</h3>
+                            <p class="text-gray-500 car-card-details " >
                                 ${carData.brand || carData.model || ''} • ${carData.year ? `  ${carData.year}` : ''}
                             </p>
                         </div>
@@ -520,7 +521,7 @@
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
-                            ${carData.transmission || carData.transmissions || ''}
+                            <span class="car-card-transmissions">${carData.transmission || carData.transmissions || ''}</span>
                         </div>
                         <div class="flex items-center text-gray-600">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,7 +533,7 @@
 
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="text-2xl font-bold text-primary">$${parseFloat(carData.price || 0).toFixed(2)}</span>
+                            <span class="text-2xl font-bold text-primary car-card-price" >$${parseFloat(carData.price || 0).toFixed(2)}</span>
                             <span class="text-gray-500">/day</span>
                         </div>
                         <button type="button"
@@ -584,6 +585,7 @@
             cars.forEach(car => {
                 $carsGrid.append(this.createCarCard(car));
             });
+
         },
 
         // Load cars from the API
@@ -603,6 +605,19 @@
                     if (response.data && response.data.length > 0) {
                         this.renderCarsGrid(response.data);
                         $noResults.addClass('hidden');
+                         const categories = response.data;
+                        const $categorySelect = $('#category');
+
+                        // Clear existing options except the default one
+                        $categorySelect.find('option:not([value=""])').remove();
+
+                        categories.forEach(category => {
+                            $categorySelect.append(
+                                $('<option></option>')
+                                    .val(category.category)
+                                    .text(category.category)
+                            );
+                        });
                     } else {
                         this.renderCarsGrid([]);
                         $noResults.removeClass('hidden');
@@ -767,249 +782,78 @@
                 });
             });
         }
+
+
+
+
+
+
     };
 
     // Initialize when document is ready
     $(document).ready(() => {
         CarsGrid.init();
     });
+
+
+
+function search(name = "",categorySer="",price = "", transmission = "") {
+  const $cards = $('.car-card');
+  console.log('Total cards found:', $cards.length);
+
+  $cards.each(function (i) {
+    const $card = $(this);
+
+    const nameEl = $card.find('.car-card-name').text().toLowerCase().trim();
+    const priceEl = $card.find('.car-card-price').text().trim();
+    const transmissionEl = $card.find('.car-card-transmissions').text().toLowerCase().trim();
+    const priceInt = Math.floor(parseFloat(priceEl.replace(/[^0-9.]/g, '')));
+    const categoryEl = $card.find('.car-card-category').text().toLowerCase().trim();
+
+
+    if (
+      nameEl.toLowerCase().includes(name.toLowerCase()) &&
+      transmissionEl.toLowerCase().includes(transmission.toLowerCase())&&
+      categoryEl.toLowerCase().includes(categorySer.toLowerCase()
+  )
+
+    ) {
+      if (!price || priceInt <= parseInt(price)) {
+        console.log(`Card #${i + 1} matches filter: name="${nameEl}", price="${priceEl}", transmission="${transmissionEl}"`);
+        $card.removeClass('hidden'); // Show it
+      } else {
+        console.log(`Card #${i + 1} does not match price filter: ${priceInt} > ${price}`);
+        $card.addClass("hidden"); // Hide it
+      }
+    } else {
+      console.log(`Hiding card #${i + 1} with name "${nameEl}" due to name or transmission mismatch`);
+      $card.addClass("hidden"); // Hide it
+    }
+  });
+}
+
+$("#quick-search").on("input", function () {
+  const name = $(this).val();
+  search(name);
+});
+
+$("#filter-form").on("submit", function (e) {
+  e.preventDefault();
+    const name = $("#quick-search").val();
+    const category = $("#category").val();
+    const price = $("#price").val();
+    const transmission = $("#transmission").val();
+    search(name, category, price, transmission);
+
+});
+
     </script>
     @endpush
 
     @push('styles')
     <style>
-    .car-card {
-        transition: transform 0.2s ease-in-out;
-    }
-
-    .car-card:hover {
-        transform: translateY(-2px);
-    }
-
-    .btn-primary {
+           .btn-primary {
         @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
-    }
-
-    .animate-spin {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* Modal Styles */
-    #rental-modal {
-        transition: opacity 0.2s ease-in-out;
-    }
-
-    #rental-modal.hidden {
-        display: none !important;
-    }
-
-    .spinner {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #ffffff;
-        border-top: 2px solid transparent;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    body.overflow-hidden {
-        overflow: hidden;
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        overflow-y: auto;
-    }
-
-    .modal-content {
-        background-color: #fff;
-        margin: 5% auto;
-        padding: 24px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        position: relative;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .close {
-        color: #6b7280;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-
-    .close:hover {
-        color: #1f2937;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 500;
-        color: #374151;
-    }
-
-    .form-group input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        transition: border-color 0.2s;
-    }
-
-    .form-group input:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .price-summary {
-        background: #f9fafb;
-        padding: 16px;
-        border-radius: 6px;
-        margin: 20px 0;
-    }
-
-    .price-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        color: #4b5563;
-    }
-
-    .price-row.total {
-        border-top: 1px solid #e5e7eb;
-        padding-top: 12px;
-        margin-top: 12px;
-        font-weight: 600;
-        color: #111827;
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 24px;
-    }
-
-    .btn-cancel {
-        padding: 8px 16px;
-        background: #f3f4f6;
-        color: #374151;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .btn-cancel:hover {
-        background: #e5e7eb;
-    }
-
-    .btn-primary {
-        padding: 8px 16px;
-        background: #3b82f6;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-primary:hover {
-        background: #2563eb;
-    }
-
-    .btn-primary:disabled {
-        background: #93c5fd;
-        cursor: not-allowed;
-    }
-
-    /* Add new styles for availability */
-    .car-card.unavailable {
-        position: relative;
-    }
-
-    .car-card.unavailable::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.1);
-        pointer-events: none;
-    }
-
-    .grayscale {
-        filter: grayscale(100%);
-    }
-
-    .btn-primary:disabled {
-        background-color: #93c5fd;
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-
-    /* Availability badge styles */
-    .bg-green-100 {
-        background-color: rgba(220, 252, 231, 0.9);
-    }
-
-    .bg-red-100 {
-        background-color: rgba(254, 226, 226, 0.9);
-    }
-
-    .text-green-800 {
-        color: #166534;
-    }
-
-    .text-red-800 {
-        color: #991b1b;
-    }
-
-    /* Add these styles to your existing styles */
-    #modal-error {
-        transition: all 0.3s ease-in-out;
-    }
-
-    #modal-error.hidden {
-        display: none;
     }
     </style>
     @endpush

@@ -11,7 +11,7 @@
                 <div class="bg-white shadow-sm rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
-                        
+
                         @if (session('status'))
                             <div class="mt-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded relative" role="alert">
                                 {{ session('status') }}
@@ -24,7 +24,7 @@
 
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" name="name" id="name" 
+                                <input type="text" name="name" id="name"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                                        value="{{ old('name', auth()->user()->name) }}" required>
                                 @error('name')
@@ -34,7 +34,7 @@
 
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
-                                <input type="email" name="email" id="email" 
+                                <input type="email" name="email" id="email"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                                        value="{{ old('email', auth()->user()->email) }}" required>
                                 @error('email')
@@ -44,7 +44,7 @@
 
                             <div>
                                 <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                <input type="tel" name="phone" id="phone" 
+                                <input type="tel" name="phone" id="phone"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                                        value="{{ old('phone', auth()->user()->phone) }}">
                                 @error('phone')
@@ -65,13 +65,13 @@
                 <div class="mt-6 bg-white shadow-sm rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Change Password</h3>
-                        <form action="{{ route('profile.password') }}" method="POST" class="mt-6 space-y-6">
+                        <form action="" method="POST" class="mt-6 space-y-6">
                             @csrf
                             @method('PUT')
 
                             <div>
                                 <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                                <input type="password" name="current_password" id="current_password" 
+                                <input type="password" name="current_password" id="current_password"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" required>
                                 @error('current_password')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -80,7 +80,7 @@
 
                             <div>
                                 <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
-                                <input type="password" name="password" id="password" 
+                                <input type="password" name="password" id="password"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" required>
                                 @error('password')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -89,7 +89,7 @@
 
                             <div>
                                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" 
+                                <input type="password" name="password_confirmation" id="password_confirmation"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" required>
                             </div>
 
@@ -139,7 +139,7 @@
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Quick Links</h3>
                         <div class="mt-4 space-y-4">
-                            <a href="{{ route('rentals.index') }}" class="block text-sm text-primary hover:text-primary/80">
+                            <a href="{{ route('home') }}" class="block text-sm text-primary hover:text-primary/80">
                                 My Rentals
                             </a>
                             <a href="{{ route('favorites.index') }}" class="block text-sm text-primary hover:text-primary/80">
@@ -158,4 +158,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

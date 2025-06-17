@@ -145,8 +145,8 @@
             </div>
         </div>
 
-        <form id="login-form" class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
-            @csrf
+        <form id="login-form" class="mt-8 space-y-6 login" >
+
             <div class="space-y-4">
                 <div class="input-group">
                     <input id="email" name="email" type="email" required
@@ -204,58 +204,55 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
+
+<script type="module">
 $(document).ready(function() {
-    const form = $('#login-form');
+   const form = $('#login-form');
     const errorContainer = $('#error-container');
     const errorMessage = $('#error-message');
     const button = form.find('button[type="submit"]');
     const buttonText = button.find('.button-text');
     const spinner = button.find('.spinner');
-
+    console.log(form)
     form.on('submit', function(e) {
-        e.preventDefault();
 
-        // Reset error state
+        e.preventDefault();
+        console.log(e)
+
+
         errorContainer.addClass('hidden');
         errorMessage.text('');
-
-        // Show loading state
         button.prop('disabled', true);
         buttonText.addClass('opacity-0');
         spinner.removeClass('hidden');
 
         $.ajax({
-            url: form.attr('action'),
-            method: 'POST',
+            url: "/login",
+            method: "POST",
             data: form.serialize(),
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="_token"]').val()
+            },
             success: function(response) {
-                // Redirect to intended URL or dashboard
-                window.location.href = response.redirect || '/';
+                window.location.href = "/";
             },
             error: function(xhr) {
-                const response = xhr.responseJSON;
-
-                // Show error message
+                const res = xhr.responseJSON;
                 errorContainer.removeClass('hidden');
-                errorMessage.text(response.message || 'Invalid credentials');
+                errorMessage.text(res?.message || 'Invalid credentials');
 
-                // Add error animation
                 errorContainer.addClass('animate-shake');
-                setTimeout(() => {
-                    errorContainer.removeClass('animate-shake');
-                }, 500);
+                setTimeout(() => errorContainer.removeClass('animate-shake'), 500);
 
-                // Reset button state
                 button.prop('disabled', false);
                 buttonText.removeClass('opacity-0');
                 spinner.addClass('hidden');
             }
         });
+
+        return false;
     });
 
-    // Add input focus effects
     $('.input-group input').on('focus blur', function(e) {
         const group = $(this).closest('.input-group');
         if (e.type === 'focus') {
@@ -266,4 +263,4 @@ $(document).ready(function() {
     });
 });
 </script>
-@endpush
+

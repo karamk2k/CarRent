@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\UserFavorite;
+
 use App\Http\Resources\Auth\UserResource;
 use App\Http\Resources\Auth\UserFavoriteItemResource;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -15,10 +15,14 @@ use App\Http\Requests\Auth\OtpSendRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Requests\Auth\AddToFavoriteRequest;
 use App\Http\Requests\Auth\RemoveFavortie;
+use App\Http\Requests\Auth\UpdateProfileRequest;
+
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Hash;
+use ILLuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -32,27 +36,27 @@ class AuthController extends Controller
         return $this->apiResponse(true, 'User created successfully', new UserResource($user));
     }
 
-   public function login(LoginRequest $loginRequest)
+  public function login(LoginRequest $loginRequest)
 {
-    if (!$token = auth()->attempt($loginRequest->validated())) {
-        return $this->apiResponse(false, 'Unauthorized', 401);
-    }
+    $credentials = $loginRequest->validated();
+
+    $user = User::where('email', $credentials['email'])->first();
+
+ if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+    return $this->apiResponse(false, 'Invalid email or password.', [], 401);
+}
 
 
-    $user = auth()->user();
+    Auth::guard('web')->login($user);
+
     event(new Login('web', $user, false));
 
-
-    return $this->apiResponse(
-        true,
-        'User logged in successfully',
-        new UserResource($user)
-    );
+    return $this->apiResponse(true, 'User logged in successfully', new UserResource($user));
 }
 
 public function logout()
 {
-    auth()->logout();
+    auth('web')->logout();
     return $this->apiResponse(true, 'User logged out successfully');
 
 }
@@ -78,20 +82,10 @@ public function send_otp(OtpSendRequest $otpSendRequest){
 
     }
 
-    public function add_favorite(Request $request)
+    public function add_favorite(AddToFavoriteRequest $request)
     {
-        $request->validate([
-            'car_id' => 'required|exists:cars,id'
-        ]);
 
-        $user = auth()->user();
-
-        // Check if already favorited
-        if ($user->favorites()->where('car_id', $request->car_id)->exists()) {
-            return $this->apiResponse(false, 'Car is already in favorites');
-        }
-
-        // Add to favorites
+        $user = Auth::user();
         $user->favorites()->create([
             'car_id' => $request->car_id
         ]);
@@ -99,29 +93,23 @@ public function send_otp(OtpSendRequest $otpSendRequest){
         return $this->apiResponse(true, 'Added to favorites successfully');
     }
 
-    public function remove_favorite(Request $request)
+    public function remove_favorite(RemoveFavortie $request)
     {
-        $request->validate([
-            'car_id' => 'required|exists:cars,id'
-        ]);
 
-        $user = auth()->user();
+        $user = Auth::user();
 
-        // Find and delete the favorite
         $deleted = $user->favorites()
             ->where('car_id', $request->car_id)
             ->delete();
 
-        if (!$deleted) {
-            return $this->apiResponse(false, 'Car was not in favorites');
-        }
+
 
         return $this->apiResponse(true, 'Removed from favorites successfully');
     }
 
     public function get_favorites()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $favorites = $user->favorites()
             ->with(['car' => function($query) {
                 $query->with('categoryRes');
@@ -133,6 +121,18 @@ public function send_otp(OtpSendRequest $otpSendRequest){
             'Favorites retrieved successfully',
             UserFavoriteItemResource::collection($favorites)
         );
+    }
+
+    public function profile(){
+        return view('auth.profile');
+    }
+
+    public function update_profile(UpdateProfileRequest $request)
+    {
+        $user = Auth::user();
+        $user->update($request->validated());
+
+        return $this->apiResponse(true, 'Profile updated successfully', new UserResource($user));
     }
 
 }
