@@ -11,6 +11,11 @@ A Laravel-based car rental system with user authentication, car management, rent
 - Role-based access control
 - Profile image upload
 - User history tracking
+- **User Ban System**
+  - Middleware to restrict access for banned users with proper error handling
+  - Admin panel integration for banning/unbanning users
+  - Ban reasons and expiration dates
+  - Event-driven email notifications on ban/unban actions
 
 ### Car Management
 - Car listing with details
@@ -30,6 +35,7 @@ A Laravel-based car rental system with user authentication, car management, rent
 - Rental cancellation
 - Payment confirmation
 - Discount code system
+- **Cron job** to clear pending rentals after 1 hour
 
 ### Favorites System
 - Add/remove cars to favorites
@@ -43,6 +49,15 @@ A Laravel-based car rental system with user authentication, car management, rent
 - Time-limited discounts
 - Discount validation
 
+### Admin Features
+- **Admin Dashboard** with:
+  - System analytics and metrics
+  - Quick access to management sections
+  - Recent activity logs
+  - User management interface
+  - Rental oversight
+  - Ban management console
+
 ## Technical Stack
 
 ### Backend
@@ -50,12 +65,31 @@ A Laravel-based car rental system with user authentication, car management, rent
 - MySQL Database
 - Laravel Sanctum for API authentication
 - Laravel Cashier for payments
+- **Automatic Eager Loading** (Laravel 12.8+) for optimized queries
+- **Improved Exception Handling** for:
+  - Model not found
+  - Validation errors
+  - Banned user exceptions
+- **Event System** for:
+  - Payment confirmations
+  - User banning/unbanning
+  - Email notifications
+- **Activity Logger**:
+  - Comprehensive system logging
+  - User action tracking
+  - Error logging
+  - Audit trails for admin actions
 
 ### Frontend
 - Blade templating
 - jQuery for AJAX and interactivity
 - TailwindCSS for styling
 - Alpine.js for simple interactivity
+- **Admin Dashboard UI** with:
+  - Interactive charts
+  - Data tables
+  - Notification system
+  - Responsive design
 
 ### Models
 - User (with roles)
@@ -66,6 +100,7 @@ A Laravel-based car rental system with user authentication, car management, rent
 - UserFavorite
 - Discount
 - Role
+- **ActivityLog**
 
 ## Project Structure
 
@@ -74,6 +109,8 @@ A Laravel-based car rental system with user authentication, car management, rent
 - API routes for AJAX calls
 - Protected routes for authenticated users
 - Public routes for car browsing
+- **Banned user restricted routes**
+- **Admin protected routes**
 
 ### Controllers
 - AuthController (authentication, profile, favorites)
@@ -81,6 +118,9 @@ A Laravel-based car rental system with user authentication, car management, rent
 - RentalController (rental processing)
 - DiscountController (discount management)
 - UserHistoryController (rental history)
+- **BanController (user banning management)**
+- **AdminController (dashboard and system management)**
+- **LogController (activity log viewing)**
 
 ### Views
 - Authentication views (login, register)
@@ -88,6 +128,12 @@ A Laravel-based car rental system with user authentication, car management, rent
 - Rental views (booking, history)
 - Profile views
 - Favorites views
+- **Admin Dashboard views**
+  - Overview dashboard
+  - User management
+  - Ban management
+  - System logs
+  - Rental oversight
 
 ## Getting Started
 
