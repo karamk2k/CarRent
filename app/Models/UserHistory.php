@@ -16,6 +16,7 @@ class UserHistory extends Model
         'user_id',
         'car_id',
         'rent_date',
+        'rental_id',
         'return_date',
         'total_price',
         'status',
@@ -44,4 +45,8 @@ class UserHistory extends Model
     {
         return $this->belongsTo(Car::class);
     }
-} 
+    public function rental()
+    {
+        return $this->belongsTo(Rental::class);
+    }
+}

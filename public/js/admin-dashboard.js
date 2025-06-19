@@ -12,6 +12,7 @@ class AdminDashboard {
         // Activity filter change
         $('#activity-filter').on('change', (e) => {
             this.currentFilter = e.target.value;
+            console.log('Filter changed to:', this.currentFilter);
             this.updateActivityTable(1);
         });
 
@@ -163,12 +164,15 @@ class AdminDashboard {
     }
 
     renderActivityRows(activities) {
+        const storagePath = document.querySelector('meta[name="storge_path"]').getAttribute('content');
+
         return activities.map(activity => `
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full" src="${activity.user.avatar || '/images/default-avatar.png'}" alt="">
+            <img class="h-10 w-10 rounded-full" src="${activity.user.profile_picture ? storagePath + '/' + activity.user.profile_picture : storagePath + '/defaults/images.png'}" alt="">
+
                         </div>
                         <div class="ml-4">
                             <div class="text-sm font-medium text-gray-900">${activity.user.name}</div>
@@ -196,7 +200,9 @@ class AdminDashboard {
             'login': 'bg-green-100 text-green-800',
             'rental': 'bg-blue-100 text-blue-800',
             'payment': 'bg-purple-100 text-purple-800',
-            'default': 'bg-gray-100 text-gray-800'
+            'default': 'bg-gray-100 text-gray-800',
+            'banned_user': 'bg-red-100 text-red-800',
+            "rental_clear": 'bg-yellow-100 text-yellow-800',
         };
         return classes[type.toLowerCase()] || classes.default;
     }

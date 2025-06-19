@@ -56,30 +56,47 @@
             border-radius: 4px;
             margin: 10px 0;
         }
+        .payment-container {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+.amount {
+    font-size: 24px;
+    color: #16a34a;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="logo">
+        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('imgs/logo.png'))) }}" alt="Logo">
+
+
         <h2>OTP Verification</h2>
     </div>
 
     <p>Hello {{ $user->name }},</p>
-    
+
     <p>You requested a one-time password for your account. Here's your verification code:</p>
-    
+
     <div class="otp-container">
         <div class="otp-code">{{ $otp }}</div>
         <p>This code will expire at {{ $expiryTime->format('g:i A') }} ({{ $expiryTime->diffForHumans() }}).</p>
     </div>
-    
+
     <p>If you didn't request this code, please ignore this email or contact our support team.</p>
-    
+
     <div class="footer">
         <p>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
         <p>
-            <a href="{{ config('app.url') }}">Home</a> | 
-            
+            <a href="{{ config('app.url') }}">Home</a> |
+
         </p>
     </div>
 </body>

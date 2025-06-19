@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use App\Exceptions\BannedUserException;
 
 class isUserBanned
 {
@@ -17,7 +18,7 @@ class isUserBanned
     public function handle(Request $request, Closure $next): Response
     {
         if(Auth::user()->isBanned()===true){
-            return response()->view('banned');
+            throw new BannedUserException();
         }
         return $next($request);
     }

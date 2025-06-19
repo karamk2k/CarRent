@@ -9,6 +9,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Events\BannedUserDetected;
 
 class UserBanController extends Controller
 {
@@ -58,7 +59,7 @@ class UserBanController extends Controller
             ]
         ]);
 
-        // Check if user is already banned
+
         if ($user->activeBan) {
             return $this->apiResponse(
                 success: false,
@@ -78,7 +79,7 @@ class UserBanController extends Controller
             ]);
 
             DB::commit();
-
+            event(new BannedUserDetected($user));
             return $this->apiResponse(
                 success: true,
                 message: 'User has been banned successfully',

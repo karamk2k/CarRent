@@ -5,8 +5,10 @@ namespace App\Listeners;
 use App\Services\ActivityLogger;
 use Illuminate\Auth\Events\Login;
 
-class LogLoginActivity
+class LogLoginActivity implements \Illuminate\Contracts\Queue\ShouldQueue
+
 {
+    use \Illuminate\Queue\InteractsWithQueue;
     /**
      * Create the event listener.
      */

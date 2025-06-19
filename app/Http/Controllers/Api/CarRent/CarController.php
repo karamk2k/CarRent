@@ -21,6 +21,10 @@ class CarController extends Controller
         return $this->apiResponse(true, 'Car fetched successfully', new CarResource($car));
     }
 
-
+    public function show_blade(Car $car){
+        return view('cars.car', [
+            'car' => $car
+        ]);
+    }
 
 }

@@ -34,12 +34,12 @@ Route::middleware(['auth','isUserBanned'])->group(function () {
 
 
     Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
-    Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
+    Route::get('/cars/{car}', [CarController::class, 'show_blade'])->name('cars.show');
     // Auth actions
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::post('/send-otp', [AuthController::class, 'send_otp'])->name('auth.send-otp');
-    Route::post('/verify-otp', [AuthController::class, 'verify_otp'])->name('auth.verify-otp');
-
+    Route::post('/send-otp', [AuthController::class, 'send_otp'])->name('auth.send-otp')->middleware(['throttle:5,1', 'ensureEmailIsNotVerified']);
+    Route::post('/verify-otp', [AuthController::class, 'verify_otp'])->name('auth.verify-otp')->middleware(['throttle:5,1', 'ensureEmailIsNotVerified']);
+    Route::put('/change-password', [AuthController::class, 'change_password'])->name('auth.change-password')->middleware(['throttle:5,1']);
 
     // Favorites management
     Route::get('/favorites', [AuthController::class, 'get_favorites'])->name('favorites.index');
@@ -56,8 +56,8 @@ Route::middleware(['auth','isUserBanned'])->group(function () {
 
     // Profile
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
-    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
-
+    Route::put('/profile', [AuthController::class, 'update_profile'])->name('profile.update');
+    Route::post('/profile/change-profile-image', [AuthController::class, 'add_profile_picture'])->name('profile.change-image');
     // User history
     Route::get('/my-history', [UserHistoryController::class, 'index'])->name('user.history');
     Route::get('/my-favorites', function(){

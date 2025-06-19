@@ -11,11 +11,12 @@ use App\Http\Resources\Auth\UserResource;
 use App\Http\Resources\Auth\UserFavoriteItemResource;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\OtpSendRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Requests\Auth\AddToFavoriteRequest;
 use App\Http\Requests\Auth\RemoveFavortie;
 use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\ProfilePictureRequest;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -61,8 +62,8 @@ public function logout()
 
 }
 
-public function send_otp(OtpSendRequest $otpSendRequest){
-    $user = User::where('email', $otpSendRequest->input('email'))->first();
+public function send_otp(){
+    $user = Auth::user();
     $user->otp = otp_generate();
     $user->otp_expires_at = Carbon::now()->addMinutes(5);
     $user->save();
@@ -74,9 +75,10 @@ public function send_otp(OtpSendRequest $otpSendRequest){
 
 
     public function verify_otp(VerifyOtpRequest $verifyOtpRequest){
-      $user = User::where('email', $verifyOtpRequest->input('email'))->first();
+      $user = Auth::user();
       $user->otp=null;
       $user->otp_expires_at=null;
+      $user->email_verified_at = Carbon::now();
       $user->save();
       return $this->apiResponse(true, 'OTP verified successfully');
 
@@ -134,6 +136,31 @@ public function send_otp(OtpSendRequest $otpSendRequest){
 
         return $this->apiResponse(true, 'Profile updated successfully', new UserResource($user));
     }
+    public function change_password(ChangePasswordRequest $request)
+    {
+        $user = Auth::user();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return $this->apiResponse(true, 'Password changed successfully');
+    }
+
+        public function add_profile_picture(ProfilePictureRequest $request)
+        {
+            $user = Auth::user();
+
+            if ($request->hasFile('profile_picture')) {
+                $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+                $user->profile_picture = $path;
+            } elseif (!$user->profile_picture) {
+
+                $user->profile_picture = 'defaults/images.png';
+            }
+
+            $user->save();
+
+            return $this->apiResponse(true, 'Profile picture updated successfully', []);
+        }
 
 }
 

@@ -3,6 +3,13 @@
 @section('title', 'My Rental History')
 
 @section('content')
+@if(request()->has('error'))
+    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Oops!</strong>
+        <span class="block sm:inline">{{ request('error') }}</span>
+    </div>
+@endif
+
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">My Rental History</h1>
@@ -73,6 +80,18 @@
                                             @endif">
                                             {{ ucfirst($history->payment_status) }}
                                         </span>
+                                        @if ($history->payment_status === 'pending')
+                                            <div class="mt-2">
+                                              <button
+                                                    class="mt-1 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 pay-now-btn"
+                                                    data-id="{{ $history->rental->id }}"
+                                                    data-secret="{{ $history->rental->client_secret ?? '' }}"
+                                                >
+                                                    Pay Now
+                                                </button>
+
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -80,7 +99,87 @@
                     </table>
                 </div>
             </div>
+            <div id="stripeModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Complete Your Payment</h2>
+        <form id="stripe-payment-form">
+            <div id="card-element" class="mb-4 p-2 border border-gray-300 rounded"></div>
+            <div id="card-errors" class="text-red-500 text-sm mb-3"></div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" id="cancelStripeModal" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+                <button type="submit" id="confirmStripePayment" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Pay</button>
+            </div>
+        </form>
+    </div>
+</div>
+
         @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    let stripe = Stripe('{{ config("services.stripe.key") }}');
+    let elements = stripe.elements();
+    let card = elements.create('card');
+    card.mount('#card-element');
+
+    let selectedClientSecret = null;
+    let rentalId = null;
+
+    $('.pay-now-btn').on('click', function () {
+        selectedClientSecret = $(this).data('secret');
+        console.log('Selected Client Secret:', selectedClientSecret);
+        rentalId = $(this).data('id');
+        $('#stripeModal').removeClass('hidden');
+    });
+
+    $('#cancelStripeModal').on('click', function () {
+        $('#stripeModal').addClass('hidden');
+        card.clear();
+        $('#card-errors').text('');
+    });
+
+    $('#stripe-payment-form').on('submit', async function (e) {
+        e.preventDefault();
+        $('#confirmStripePayment').prop('disabled', true);
+
+        const { paymentIntent, error } = await stripe.confirmCardPayment(selectedClientSecret, {
+            payment_method: {
+                card: card,
+            }
+        });
+
+        if (error) {
+            $('#card-errors').text(error.message);
+            $('#confirmStripePayment').prop('disabled', false);
+            return;
+        }
+
+        if (paymentIntent.status === 'succeeded') {
+          $.ajax({
+            url: `/rentals/${rentalId}/confirm-payment`,
+            method: 'POST',
+            success: function(response) {
+                $('#stripeModal').addClass('hidden');
+                card.clear();
+                $('#card-errors').text('');
+                showToast('Payment successful!', 'success');
+                location.reload();
+            },
+            error: function(xhr) {
+                $('#card-errors').text('Payment confirmation failed. Please try again.');
+                $('#confirmStripePayment').prop('disabled', false);
+            }
+          })
+        } else {
+            $('#card-errors').text('Payment was not successful.');
+        }
+
+        $('#confirmStripePayment').prop('disabled', false);
+    });
+</script>
+@endpush
+

@@ -18,6 +18,8 @@ class Rental extends Model
         'total_price',
         'status',
         'discount_id',
+        'payment_intent_id',
+        'client_secret'
     ];
 
     public function user()

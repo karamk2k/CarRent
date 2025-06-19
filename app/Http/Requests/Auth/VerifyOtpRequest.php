@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class VerifyOtpRequest extends FormRequest
 {
@@ -25,21 +26,20 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             "otp" => ["required", "digits:4"],
-            "email" => ["required", "email", "exists:users"],
         ];
     }
 
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $user = User::where('email', $this->input('email'))->first();
+            $user = Auth::user();
             if($user->otp != $this->input('otp')){
                 $validator->errors()->add('otp', 'Invalid OTP');
             }
             if($user->otp_expires_at < Carbon::now()){
                 $validator->errors()->add('otp', 'OTP expired');
             }
-            
+
         });
     }
 }

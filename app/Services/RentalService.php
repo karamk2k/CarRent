@@ -10,10 +10,13 @@ use App\Models\UserHistory;
 use App\Exceptions\ActiveRentalExistsException;
 use App\Exceptions\PendingRentalExistsException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use App\Events\CarRented;
+use App\Events\PaymentMade;
+use App\Events\PendingRentalCleared;
 
 class RentalService
 {
@@ -75,7 +78,9 @@ class RentalService
                 'end_date' => $endDate,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
-                'discount_id' => $discount?->id
+                'discount_id' => $discount?->id,
+                'payment_intent_id' => $paymentIntent->id,
+                'client_secret' => $paymentIntent->client_secret
             ]);
 
             // Create user history record using UserHistory model
@@ -83,6 +88,7 @@ class RentalService
                 'user_id' => auth()->id(),
                 'car_id' => $car->id,
                 'rent_date' => $startDate,
+                'rental_id' => $rental->id,
                 'return_date' => $endDate,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
@@ -117,22 +123,32 @@ class RentalService
 
     public function confirmPayment(Rental $rental)
     {
-        // Check if rental exists and is in pending state
+
         if (!$rental || $rental->status !== 'pending') {
             throw new \Exception('Invalid rental status');
+        }
+        if (!$rental->payment_intent_id || !$rental->client_secret) {
+            throw new \Exception('Payment intent not found for this rental');
+        }
+        $intent= PaymentIntent::retrieve($rental->payment_intent_id);
+        if ($intent->status !== 'succeeded') {
+            throw new \Exception('Payment intent not succeeded');
+        }
+        if ($intent->amount_received < $rental->total_price * 100) {
+            throw new \Exception('Payment amount does not match rental total price');
         }
 
         DB::beginTransaction();
         try {
-            // Update rental status
+
             $rental->update([
                 'status' => 'confirmed'
             ]);
 
-            // Update car availability
+
             $rental->car->update(['available_at' => $rental->end_date]);
 
-            // Update user history using UserHistory model
+
             UserHistory::where('user_id', $rental->user_id)
                 ->where('car_id', $rental->car_id)
                 ->where('rent_date', $rental->start_date)
@@ -142,6 +158,9 @@ class RentalService
                 ]);
 
             DB::commit();
+            event(new PaymentMade(auth()->user(), $rental));
+            \Log::info('Payment confirmed for rental ID: ' . $rental->id);
+
             return $rental;
 
         } catch(\Exception $e) {
@@ -158,7 +177,7 @@ class RentalService
                 'status' => 'cancelled'
             ]);
 
-            // Update user history using UserHistory model
+
             UserHistory::where('user_id', $rental->user_id)
                 ->where('car_id', $rental->car_id)
                 ->where('rent_date', $rental->start_date)
@@ -171,6 +190,43 @@ class RentalService
 
             DB::commit();
             return $rental;
+
+        } catch(\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+    public function clearOldPendingRentals(){
+        DB::beginTransaction();
+        try {
+          $oldPendingRentals = Rental::with('user')->where('status', 'pending')
+            ->where('created_at', '<', now()->subMinutes(30))
+            ->get();
+
+            if ($oldPendingRentals->isEmpty()) {
+                return [];
+            }
+            foreach ($oldPendingRentals as $rental) {
+                $rental->update(['status' => 'cancelled']);
+                UserHistory::where('user_id', $rental->user_id)
+                    ->where('car_id', $rental->car_id)
+                    ->where('rent_date', $rental->start_date)
+                    ->update([
+                        'status' => 'cancelled',
+                        'payment_status' => 'cancelled'
+                    ]);
+            }
+
+            DB::commit();
+
+            foreach ($oldPendingRentals as $rental) {
+
+                event(new PendingRentalCleared($rental->user, $rental));
+                \Log::info('Pending rental cleared for rental ID: ' . $rental->id);
+            }
+            return $oldPendingRentals;
+
+
 
         } catch(\Exception $e) {
             DB::rollBack();

@@ -31,7 +31,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <img class="h-10 w-10 rounded-full" src="" alt="">
+                                    <img class="h-10 w-10 rounded-full" src="{{ $rental->user->profile_picture ? asset('storage/' . $rental->user->profile_picture) : asset('storage/defaults/images.png') }}" alt="">
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $rental->user->name }}</div>
@@ -76,7 +76,6 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             {{-- <a href="{{ route('admin.rentals.show', $rental->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a> --}}
                             @if($rental->status === 'pending')
-                                <button onclick="confirmRental({{ $rental->id }})" class="text-green-600 hover:text-green-900 mr-3">Confirm</button>
                                 <button onclick="cancelRental({{ $rental->id }})" class="text-red-600 hover:text-red-900">Cancel</button>
                             @elseif($rental->status === 'confirmed')
                                 <button onclick="startRental({{ $rental->id }})" class="text-green-600 hover:text-green-900 mr-3">complete</button>

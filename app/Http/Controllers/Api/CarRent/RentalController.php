@@ -8,6 +8,7 @@ use App\Models\Rental;
 use App\Http\Resources\CarRent\RentalResource;
 use App\Http\Requests\CarRent\CreateRentalRequest;
 use App\Services\RentalService;
+use Illuminate\Support\Facades\Log;
 
 class RentalController extends Controller
 {
@@ -38,6 +39,7 @@ class RentalController extends Controller
             $rental = $this->rentalService->confirmPayment($rental);
             return $this->apiResponse(true, 'Payment confirmed and rental activated', new RentalResource($rental));
         } catch (\Exception $e) {
+                \Log::error('Payment confirmation failed: ' . $e->getMessage());
             return $this->apiResponse(false, $e->getMessage(), null, 500);
         }
     }

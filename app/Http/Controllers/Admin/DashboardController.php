@@ -44,7 +44,7 @@ class DashboardController extends Controller
         $query = Activity::with('user')
             ->latest();
 
-        // Apply filter if not 'all'
+
         if ($filter !== 'all') {
             $query->where('type', $filter);
         }

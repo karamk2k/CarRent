@@ -33,13 +33,13 @@
                             <select onchange="updateUserRole({{ $user->id }}, this.value)"
                                     class="text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                     {{ $user->id === auth()->id() ? 'disabled' : '' }}>
-                                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="customer" {{ $user->role->name === 'user' ? 'selected' : '' }}>customer</option>
+                                <option value="admin" {{ $user->role->name === 'admin' ? 'selected' : '' }}>Admin</option>
                             </select>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $user->isBanned() ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                {{ $user->isBanned() ? 'Banned' : 'Active' }}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $user->is_banned  ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                {{ $user->is_banned ? 'Banned' : 'Active' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -47,7 +47,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             @if($user->id !== auth()->id())
-                                @if($user->isBanned())
+                                @if($user->is_banned)
                                     <button onclick="unbanUser({{ $user->id }})" class="text-green-600 hover:text-green-900">Unban</button>
                                 @else
                                     <button onclick="banUser({{ $user->id }})" class="text-red-600 hover:text-red-900">Ban</button>

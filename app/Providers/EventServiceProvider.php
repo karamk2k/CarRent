@@ -3,8 +3,14 @@
 namespace App\Providers;
 
 use App\Events\CarRented;
+use App\Events\PaymentMade;
 use App\Listeners\LogCarRented;
 use App\Listeners\LogLoginActivity;
+use App\Listeners\LogPayment;
+use App\Events\PendingRentalCleared;
+use App\Listeners\LogPendingRentalClear;
+use App\Events\BannedUserDetected;
+use App\Listeners\SendBannedUserMail;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -16,15 +22,23 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        // Laravel's built-in login event
+
         Login::class => [
             LogLoginActivity::class,
         ],
-
-        // Custom car rental event
         CarRented::class => [
             LogCarRented::class,
         ],
+        PaymentMade::class => [
+            LogPayment::class,
+        ],
+        PendingRentalCleared::class =>[
+            LogPendingRentalClear::class,
+        ],
+        BannedUserDetected::class =>[
+            SendBannedUserMail::class,
+        ]
+
     ];
 
     /**

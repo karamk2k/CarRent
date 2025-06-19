@@ -123,9 +123,11 @@
                 <div class="flex space-x-2">
                     <select id="activity-filter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="all">All Activities</option>
-                        <option value="rentals">Rentals</option>
-                        <option value="logins">Logins</option>
-                        <option value="payments">Payments</option>
+                        <option value="rental">Rentals</option>
+                        <option value="login">Logins</option>
+                        <option value="payment">Payments</option>
+                        <option value="banned_user">Banned Users</option>
+                        <option value="rental_clear">rental_clear</option>
                     </select>
                 </div>
             </div>

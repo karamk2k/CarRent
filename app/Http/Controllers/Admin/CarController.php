@@ -22,31 +22,12 @@ class CarController extends Controller
     }
 
 
-    public function store(CarRequest $request): JsonResponse // Assuming you want CarRequest for validation
-    // OR public function store(Request $request): JsonResponse // If using generic Request
+    public function store(CarRequest $request): JsonResponse
+
     {
-        $validated = $request->validated(); // If using CarRequest
-        // OR $validated = $request->all(); // If using generic Request and manually validating or just inspecting
+        $validated = $request->validated();
 
-        // --- DEBUGGING START ---
-        // Log the entire validated data array
-        Log::info('Car store - Validated data:', $validated);
 
-        // Log the status of the image file specifically
-        if ($request->hasFile('image')) {
-            Log::info('Car store - Image file detected:', [
-                'name' => $request->file('image')->getClientOriginalName(),
-                'size' => $request->file('image')->getSize(),
-                'mime' => $request->file('image')->getMimeType(),
-                'isValid' => $request->file('image')->isValid(),
-            ]);
-        } else {
-            Log::warning('Car store - No image file found in request.');
-        }
-        // --- DEBUGGING END ---
-
-        // Now, keep your original logic that might be causing the 500
-        // This is the line that was likely line 28 in your original error:
         $validated['image'] = $request->file('image')->store('cars', 'public');
 
 
@@ -89,7 +70,7 @@ class CarController extends Controller
 
     public function destroy(Car $car): JsonResponse
     {
-        // Delete car image if exists
+
         if ($car->image) {
             Storage::disk('public')->delete($car->image);
         }
@@ -101,4 +82,6 @@ class CarController extends Controller
             message: 'Car deleted successfully'
         );
     }
+
+
 }

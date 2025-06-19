@@ -202,103 +202,86 @@
         errorDiv.classList.add('hidden');
     }
 
-    // Update the form submission handler to use the new error display
-    document.getElementById('rentalForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        hideModalError(); // Hide any previous errors
+$('#rentalForm').on('submit', async function(e) {
+    e.preventDefault();
+    hideModalError();
 
-        if (!stripe || !card) {
-            showModalError('Payment system is not available. Please try a different browser or disable your ad blocker.');
-            return;
+    if (!stripe || !card) {
+        showModalError('Payment system is not available. Please try a different browser or disable your ad blocker.');
+        return;
+    }
+
+    const $submitBtn = $('#submit-rental');
+    const $spinner = $submitBtn.find('.spinner');
+    $submitBtn.prop('disabled', true);
+    $spinner.removeClass('hidden');
+
+    try {
+        let formData = $(this).serializeArray();
+        console.log('Form data before processing:', formData);
+
+        const response = await $.ajax({
+            url: '/rentals',
+            method: 'POST',
+            data: formData
+        });
+
+        if (!response.data || !response.data.client_secret) {
+            console.error('Invalid response from server:', response);
+            throw new Error('Invalid response from server');
         }
 
-        const submitBtn = document.getElementById('submit-rental');
-        const spinner = submitBtn.querySelector('.spinner');
-        submitBtn.disabled = true;
-        spinner.classList.remove('hidden');
+        const result = await stripe.confirmCardPayment(response.data.client_secret, {
+            payment_method: {
+                card: card,
+            }
+        });
 
-        try {
+        if (result.error) {
+            throw new Error(result.error.message);
 
-            const formData = new FormData(this);
-            const response = await fetch('/rentals', {
+        }
+
+        if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+            const confirmResponse = await $.ajax({
+                url: `/rentals/${response.data.rental.id}/confirm-payment`,
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    car_id: formData.get('car_id'),
-                    start_date: formData.get('start_date'),
-                    end_date: formData.get('end_date'),
-                    discount_name: formData.get('discount_name'),
-                    payment_method: 'stripe'
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Error creating rental');
-            }
-
-            if (!result.data || !result.data.client_secret) {
-                throw new Error('Invalid response from server');
-            }
-
-            // Confirm the payment with Stripe
-            const { paymentIntent, error } = await stripe.confirmCardPayment(result.data.client_secret, {
-                payment_method: {
-                    card: card,
-                    billing_details: {
-                        // Optional billing details
-                    }
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
                 }
             });
 
-            if (error) {
-                throw new Error(error.message);
+            // Reset form and UI
+            $('#rentalForm')[0].reset();
+            card.clear();
+            $('#card-errors').text('');
+            $('#modalBasePrice').text('$0.00');
+            $('#modalDiscountAmount').text('-$0.00');
+            $('#modalTotalPrice').text('$0.00');
+
+            showToast('Car rented successfully!', 'success');
+            closeRentalModal();
+
+            if (typeof CarsGrid !== 'undefined') {
+                CarsGrid.loadCars();
             }
-
-            if (paymentIntent.status === 'succeeded') {
-                const confirmResponse = await fetch(`/rentals/${result.data.rental.id}/confirm-payment`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!confirmResponse.ok) {
-                    const confirmResult = await confirmResponse.json();
-                    throw new Error(confirmResult.message || 'Error confirming rental payment');
-                }
-
-                this.reset();
-                card.clear();
-                document.getElementById('card-errors').textContent = '';
-                document.getElementById('modalBasePrice').textContent = '$0.00';
-                document.getElementById('modalDiscountAmount').textContent = '-$0.00';
-                document.getElementById('modalTotalPrice').textContent = '$0.00';
-
-                showToast('Car rented successfully!', 'success');
-                closeRentalModal();
-
-                // Refresh cars grid
-                if (typeof CarsGrid !== 'undefined') {
-                    CarsGrid.loadCars();
-                }
-            } else {
-                throw new Error('Payment was not successful');
-            }
-        } catch (error) {
-            console.error('Rental error:', error);
-            showModalError(error.message || 'Error processing rental');
-        } finally {
-            submitBtn.disabled = false;
-            spinner.classList.add('hidden');
+        } else {
+            throw new Error('Payment was not successful');
         }
-    });
+
+    } catch (error) {
+        console.error('Rental error:', error);
+        showModalError(error.message || 'Error processing rental');
+        window.location.href = "/my-history?error=" + encodeURIComponent("payment_error");
+
+    } finally {
+        $submitBtn.prop('disabled', false);
+        $spinner.addClass('hidden');
+    }
+});
+
+
 
     function closeRentalModal() {
         document.getElementById('rentalModal').style.display = 'none';
@@ -395,10 +378,6 @@
         },
 
         initFavorites() {
-            // Load user favorites on page load if authenticated
-
-
-            // Handle favorite button clicks
             $(document).on('click', '.favorite-btn', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -413,7 +392,6 @@
                     return;
                 }
 
-                // Use the correct endpoint based on action
                 const url = isFavorite ? '/favorites/remove' : '/favorites/add';
                 const method = isFavorite ? 'DELETE' : 'POST';
 
@@ -447,11 +425,11 @@
             const card = document.createElement('div');
             const carData = car.car || car;
 
-            // Check car availability
+
             const isAvailable = carData.available_at === null;
             const availabilityClass = isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
-            // Check if user has pending or ongoing rental
+
             const hasPendingRental = {{ auth()->check() ? (auth()->user()->hasPendingRental() ? 'true' : 'false') : 'false' }};
             const hasOngoingRental = {{ auth()->check() ? (auth()->user()->hasOngoingRental() ? 'true' : 'false') : 'false' }};
             const canRent = isAvailable && !hasPendingRental && !hasOngoingRental;
@@ -548,7 +526,7 @@
                 </div>
             `;
 
-            // Add click handler for rent button
+
             const rentBtn = card.querySelector('.rent-now-btn');
             if (rentBtn && canRent) {
                 rentBtn.addEventListener('click', (e) => {
@@ -692,7 +670,7 @@
 
                 $('#base-price').text(`$${totalBasePrice.toFixed(2)}`);
 
-                // Check discount if entered
+
                 const discountCode = $('#discount_name').val();
                 if (discountCode) {
                     this.checkDiscount(discountCode, totalBasePrice);
@@ -749,38 +727,7 @@
             });
 
             // Form submission
-            $form.on('submit', (e) => {
-                e.preventDefault();
-                const $submitBtn = $('#confirm-rental');
-                const $spinner = $submitBtn.find('.spinner');
 
-                $submitBtn.prop('disabled', true);
-                $spinner.removeClass('hidden');
-
-                $.ajax({
-                    url: '/rentals',
-                    method: 'POST',
-                    data: $form.serialize(),
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: (response) => {
-                        showToast('Car rented successfully!', 'success');
-                        this.closeRentalModal();
-                        // Optionally refresh the cars grid
-                        this.loadCars();
-                    },
-                    error: (xhr) => {
-                        const message = xhr.responseJSON?.message || 'Error processing rental';
-                        console.log(xhr.responseJSON);
-                        showToast(message, 'error');
-                    },
-                    complete: () => {
-                        $submitBtn.prop('disabled', false);
-                        $spinner.addClass('hidden');
-                    }
-                });
-            });
         }
 
 

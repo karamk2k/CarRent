@@ -1,0 +1,13 @@
+feat: implement user banning system with events, mail, and improved exception handling
+
+- Added isUserBanned middleware to block banned users
+- Created BannedUserException with custom render method (JSON + web)
+- Set up automatic exception handling via withExceptions() in app.php:
+  - Handles ValidationException, ModelNotFoundException, AuthenticationException
+- Implemented event & mailable for user banning notification
+- Integrated user ban management UI with AJAX modals for ban/unban
+- Reduced database queries via eager loading optimizations
+- Improved admin UX with live updates to ban status in table
+
+Refs: Laravel 12 automatic eager loading, clean exception rendering
+

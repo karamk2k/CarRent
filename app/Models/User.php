@@ -24,6 +24,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'profile_picture',
         'password',
         'phone_number',
         'address',
@@ -83,7 +84,7 @@ class User extends Authenticatable
 public function hasOngoingRental(): bool
 {
     return $this->rentals()
-        ->whereNotIn('status', ['cancelled', 'completed'])
+        ->whereNotIn('status', ['cancelled', 'completed','pending'])
         ->where('end_date', '>', now())
         ->exists();
 }

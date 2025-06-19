@@ -4,9 +4,12 @@ namespace App\Listeners;
 
 use App\Events\CarRented;
 use App\Services\ActivityLogger;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-class LogCarRented
+class LogCarRented implements ShouldQueue
 {
+    use InteractsWithQueue;
     /**
      * Create the event listener.
      */
