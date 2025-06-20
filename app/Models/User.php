@@ -84,7 +84,7 @@ class User extends Authenticatable
 public function hasOngoingRental(): bool
 {
     return $this->rentals()
-        ->whereNotIn('status', ['cancelled', 'completed','pending'])
+        ->where('status','confirmed')
         ->where('end_date', '>', now())
         ->exists();
 }

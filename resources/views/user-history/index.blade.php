@@ -10,6 +10,13 @@
     </div>
 @endif
 
+@if(request()->has('success'))
+    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Success!</strong>
+        <span class="block sm:inline">{{ request('success') }}</span>
+    </div>
+@endif
+
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">My Rental History</h1>
@@ -64,7 +71,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                             @if($history->status === 'completed') bg-green-100 text-green-800
-                                            @elseif($history->status === 'active') bg-blue-100 text-blue-800
+                                            @elseif($history->status === 'confirmed') bg-blue-100 text-blue-800
                                             @elseif($history->status === 'cancelled') bg-red-100 text-red-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
